@@ -9,6 +9,18 @@ use App\Models\User;
 
 class TaskController extends Controller
 {
+
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $totalTasks = Task::where('user_id', $user->id)->count();
+        $completedTasks = Task::where('user_id', $user->id)->where('completed', true)->count();
+        $pendingTasks = $totalTasks - $completedTasks;
+
+        return view('tasks.dashboard', compact('totalTasks', 'completedTasks', 'pendingTasks'));
+    }
+
+
     /**
      * Display a listing of the resource.
      */
@@ -116,18 +128,5 @@ class TaskController extends Controller
 
         $task->delete();
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully!');
-    }
-
-    public function dashboard()
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'You must be logged in to view the dashboard.');
-        }
-
-        $totalTasks = Task::where('user_id', Auth::id())->count();
-        $completedTasks = Task::where('user_id', Auth::id())->where('completed', true)->count();
-        $pendingTasks = $totalTasks - $completedTasks;
-
-        return view('tasks.dashboard', compact('totalTasks', 'completedTasks', 'pendingTasks'));
     }
 }

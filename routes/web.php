@@ -2,20 +2,22 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
+use Illuminate\Support\Facades\Auth;
 
+// Redirect root URL to register or dashboard
 Route::get('/', function () {
-    return redirect()->route('tasks.index');
+    return Auth::check()
+        ? redirect()->route('tasks.dashboard')
+        : redirect('/register');
 });
 
+// Jetstream's auth middleware group + custom route
 Route::middleware([
     'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
+    config('jetstream.auth_session'), // Includes session handling
+    'verified', // Requires email verification
 ])->group(function () {
-    // Route::get('/dashboard', function () {
-    //     return view('dashboard');
-    // })->name('dashboard');
+    // Your custom dashboard route
+    Route::get('/task-dashboard', [TaskController::class, 'dashboard'])
+        ->name('tasks.dashboard');
 });
-
-// Use the TaskController route
-Route::get('/dashboard', [TaskController::class, 'dashboard'])->name('tasks.dashboard');
