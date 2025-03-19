@@ -11,13 +11,11 @@ Route::get('/', function () {
         : redirect('/register');
 });
 
-// Jetstream's auth middleware group + custom route
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'), // Includes session handling
-    'verified', // Requires email verification
-])->group(function () {
-    // Your custom dashboard route
-    Route::get('/task-dashboard', [TaskController::class, 'dashboard'])
-        ->name('tasks.dashboard');
+// Task routes (protected by auth and email verification)
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    // Dashboard with stats
+    Route::get('/task-dashboard', [TaskController::class, 'dashboard'])->name('tasks.dashboard');
+
+    // CRUD routes for tasks
+    Route::resource('tasks', TaskController::class)->except(['show']); // Generates tasks.create, tasks.edit, etc.
 });

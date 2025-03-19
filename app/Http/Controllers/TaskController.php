@@ -12,12 +12,17 @@ class TaskController extends Controller
 
     public function dashboard()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'You must be logged in to view the dashboard.');
+        }
+
         $user = Auth::user();
-        $totalTasks = Task::where('user_id', $user->id)->count();
-        $completedTasks = Task::where('user_id', $user->id)->where('completed', true)->count();
+        $tasks = $user->tasks()->get(); // Fetch tasks for the logged-in user
+        $totalTasks = $tasks->count();
+        $completedTasks = $tasks->where('completed', true)->count();
         $pendingTasks = $totalTasks - $completedTasks;
 
-        return view('tasks.dashboard', compact('totalTasks', 'completedTasks', 'pendingTasks'));
+        return view('tasks.dashboard', compact('tasks', 'totalTasks', 'completedTasks', 'pendingTasks'));
     }
 
 
@@ -43,7 +48,7 @@ class TaskController extends Controller
             return redirect()->route('login')->with('error', 'You must be logged in to create a task.');
         }
 
-        $users = User::where('id', '!=', Auth::id())->get(); // All users except the current user
+        $users = User::where('id', '!=', Auth::id())->get();
         return view('tasks.create', compact('users'));
     }
 
@@ -75,7 +80,7 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Task $task)
     {
         //
     }
